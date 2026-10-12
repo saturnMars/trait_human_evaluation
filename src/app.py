@@ -492,3 +492,7 @@ def main():
 
                 with col_cancel:
                     if st.button("Go back", use_container_width=True):
+                        st.rerun()
+
+if __name__ == '__main__':
+    main()

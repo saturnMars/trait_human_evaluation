@@ -6,6 +6,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 from datetime import datetime
 import numpy as np
+from supabase import create_client
 
 output_folder = "outputs"
 RESULTS_FILE = os.path.join("outputs", "human_evaluations.jsonl")
@@ -20,6 +21,7 @@ def load_labels():
      # Load the labels
     label_desc = {dataset: PERSONA_PROMPTS.get(dataset)[0] for dataset in datasets}
     return label_desc
+
 
 TRAIT_GROUPS = {
     "politics": [
@@ -113,6 +115,13 @@ For information contact: [mbronzini@fbk.eu](mailto:mbronzini@fbk.eu)
 5. Risk-averse: -1.0
 """
 
+@st.cache_resource
+def get_supabase():
+    return create_client(
+        st.secrets["SUPABASE_URL"],
+        st.secrets["SUPABASE_SECRET_KEY"],
+    )
+
 
 @st.cache_data
 def load_user_evaluation_data(user_id: str):
@@ -127,28 +136,68 @@ def load_user_evaluation_data(user_id: str):
     return evals
 
 def load_saved_results():
-    if os.path.exists(RESULTS_FILE):
-        try:
-            return pd.read_json(RESULTS_FILE, lines=True)
-        except Exception:
-            return pd.DataFrame()
-    return pd.DataFrame()
+    """Load saved evaluations from Supabase into the DataFrame
+    format expected by the existing app.
+    """
+    supabase = get_supabase()
+    rows = []
+    page_size = 1000
+    start = 0
+
+    while True:
+        response = (
+            supabase.table("human_evaluations")
+            .select("*")
+            .order("id")
+            .range(start, start + page_size - 1)
+            .execute()
+        )
+
+        batch = response.data or []
+        rows.extend(batch)
+
+        if len(batch) < page_size:
+            break
+
+        start += page_size
+
+    results_df = pd.DataFrame(rows)
+
+    if results_df.empty:
+        return pd.DataFrame(
+            columns=[
+                "user_id", "session_doc", "timestamp",
+                "doc_id", "text", "scores"
+            ]
+        )
+
+    # Keep the column name expected by the existing UI.
+    return results_df.rename(columns={"text_content": "text"})
+
 
 def save_result(item_idx, text_content, scores, user_id, doc_id):
-    os.makedirs(output_folder, exist_ok=True)
-    results_df = load_saved_results()
+    """Insert one evaluation. Raise an error if the save fails."""
+    supabase = get_supabase()
 
-    new_result = pd.DataFrame([{
-        "user_id": user_id,
+    record = {
+        "user_id": str(user_id),
         "session_doc": str(item_idx),
-        "timestamp": datetime.now().isoformat(),
-        "doc_id": doc_id,
-        "text": text_content,
-        "scores": scores
-    }])
+        "timestamp": datetime.now().astimezone().isoformat(),
+        "doc_id": str(doc_id) if doc_id is not None else None,
+        "text_content": str(text_content),
+        "scores": scores,
+    }
 
-    results_df = pd.concat([results_df, new_result], ignore_index=True)
-    results_df.to_json(RESULTS_FILE, orient='records', lines=True)
+    response = (
+        supabase.table("human_evaluations")
+        .insert(record)
+        .execute()
+    )
+
+    if not response.data:
+        raise RuntimeError("Supabase did not confirm the saved evaluation.")
+
+    return True
 
 @st.dialog("Welcome to the Annotation Tool", width="large")
 def ask_annotator_name():
@@ -201,26 +250,38 @@ def confirm_save(current_text, current_id_document, evals):
     col_confirm, col_cancel = st.columns(2)
 
     with col_confirm:
-        if st.button("Yes, Save & Next 💾", type="primary", use_container_width=True):
-            save_result(
-                st.session_state.current_idx,
-                current_text,
-                st.session_state.current_scores,
-                st.session_state.annotator_name,
-                current_id_document
-            )
-
-            st.toast(
-                f"✅ Entry #{st.session_state.current_idx} saved successfully!",
-                icon="💾"
-            )
-
-            if st.session_state.current_idx < len(evals) - 1:
-                st.session_state.current_idx += 1
-                st.session_state.current_trait_idx = 0
-                st.rerun()
+       if st.button(
+            "Yes, Save & Next 💾",
+            type="primary",
+            use_container_width=True,
+        ):
+            try:
+                save_result(
+                    st.session_state.current_idx,
+                    current_text,
+                    st.session_state.current_scores,
+                    st.session_state.annotator_name,
+                    current_id_document,
+                )
+            except Exception as e:
+                st.error(
+                    f"Could not save your evaluation. "
+                    f"Your current document has not been advanced. Error: {e}"
+                )
             else:
-                st.success("🎉 You have completed evaluating all assigned documents!")
+                st.toast(
+                    f"✅ Entry #{st.session_state.current_idx} saved successfully!",
+                    icon="💾",
+                )
+
+                # Keep your existing code here that advances to
+                # the next document and resets the trait index.
+                if st.session_state.current_idx < len(evals) - 1:
+                    st.session_state.current_idx += 1
+                    st.session_state.current_trait_idx = 0
+
+                # Keep any other existing success-only state updates here.
+                st.rerun()
 
     with col_cancel:
         if st.button("Cancel", use_container_width=True):

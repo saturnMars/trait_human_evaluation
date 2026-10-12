@@ -352,6 +352,7 @@ def main():
     trait_idx = st.session_state.current_trait_idx
     cur_cat, cur_trait_key, cur_trait_desc = traits_list[trait_idx]
 
+    target_concepts = evals.iloc[st.session_state.current_idx]['concepts']
     filtered_concepts = {
         group: [item for item in items if item in target_concepts] 
         for group, items in trait_groups.items()

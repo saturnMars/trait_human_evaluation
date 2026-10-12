@@ -353,11 +353,12 @@ def main():
     cur_cat, cur_trait_key, cur_trait_desc = traits_list[trait_idx]
 
     target_concepts = evals.iloc[st.session_state.current_idx]['concepts']
-    reversed_trait_groups = {item: group for group, items in trait_groups.items() for item in items}
-    target_concepts = sorted([reversed_trait_groups.get(item).upper() +': '+ item.replace('-', ' ') for item in target_concepts])
+    
+    target_concepts_str = {group: [for item in items if item in target_concepts] for group, items in trait_groups.items()}
+    target_concepts_str = sorted([group.upper() +': '+ ' | '.join([item.replace('-', ' ') for item in items]) for group, items])
 
     # Add some suggestions
-    st.markdown(f'**Target traits ({len(target_concepts)})**: ' +  ' | '.join(target_concepts))
+    st.markdown(f'**Target traits ({len(target_concepts)})**: ' + target_concepts_str)
 
     st.markdown("---")
     st.markdown("## Trait Selection & Scoring")

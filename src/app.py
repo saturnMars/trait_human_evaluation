@@ -315,7 +315,7 @@ def main():
     with st.expander("All traits", expanded=False):
 
         for group, items in trait_groups.items():
-            st.markdown(f"**{group.replace('_', ' ').upper()}**")
+            st.markdown(f"**{group.replace('_', ' ').upper()} ({len(items)})**")
             st.markdown('- ' + '\n- '.join([item.replace('-', ' ') for item in items]))
 
     #formatted_text = current_text.replace('.', '.\n\n')

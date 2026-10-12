@@ -117,10 +117,27 @@ For information contact: [mbronzini@fbk.eu](mailto:mbronzini@fbk.eu)
 
 @st.cache_resource
 def get_supabase():
-    return create_client(
-        st.secrets["SUPABASE_URL"],
-        st.secrets["SUPABASE_SECRET_KEY"],
-    )
+    try:
+        client = create_client(
+            st.secrets["SUPABASE_URL"],
+            st.secrets["SUPABASE_SECRET_KEY"],
+        )
+
+        response = (
+            client.table("human_evaluations")
+            .select("id")
+            .limit(1)
+            .execute()
+        )
+
+        st.success(
+            f"Supabase connection works. Rows returned: {len(response.data)}"
+        )
+
+    except Exception as e:
+        st.error("Supabase test failed.")
+        st.code(f"{type(e).__name__}: {e}")
+        raise
 
 
 @st.cache_data

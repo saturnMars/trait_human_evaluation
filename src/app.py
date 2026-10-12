@@ -312,6 +312,9 @@ def main():
     with st.expander("📖 Instructions & Scoring", expanded=False):
         st.markdown(INSTRUCTION)
 
+    with st.expander("All traits", expanded=False):
+        st.markdown(INSTRUCTION)
+
     #formatted_text = current_text.replace('.', '.\n\n')
 
     st.markdown("**Text Content:**")

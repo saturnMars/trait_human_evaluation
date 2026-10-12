@@ -313,7 +313,10 @@ def main():
         st.markdown(INSTRUCTION)
 
     with st.expander("All traits", expanded=False):
-        st.markdown(INSTRUCTION)
+
+        for group, items in trait_groups.items():
+            st.markdown(f"**{group}**")
+            st.markdown('\n-'.join(items))
 
     #formatted_text = current_text.replace('.', '.\n\n')
 

@@ -366,7 +366,7 @@ def main():
     ])
 
     # Add some suggestions
-    st.markdown(f'**Target traits ({len(target_concepts)})**: ' + target_concepts_str)
+    st.markdown(f'**Target traits ({len(target_concepts)})**: ' + ', '.join(target_concepts_str))
 
     st.markdown("---")
     st.markdown("## Trait Selection & Scoring")

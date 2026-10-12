@@ -82,8 +82,6 @@ def load_user_evaluation_data(user_id: str):
     evals_path = os.path.join("data", "text_openai_eval.jsonl")
     evals = pd.read_json(evals_path, lines=True)
 
-    print(evals)
-
     # load the raw texts
     all_texts = pd.read_json(os.path.join("data", "steering_outputs.json"))
     all_texts = all_texts[['concepts', 'responses']].explode('responses').drop_duplicates(subset=['responses']).rename(columns = {'responses': 'input'})

@@ -4,7 +4,6 @@ import hashlib
 import pandas as pd
 import streamlit as st
 import streamlit.components.v1 as components
-from datetime import datetime
 import numpy as np
 from supabase import create_client
 
@@ -136,7 +135,6 @@ def save_result(item_idx, text_content, scores, user_id, doc_id):
     record = {
         "user_id": str(user_id),
         "session_doc": str(item_idx),
-        "timestamp": datetime.now().astimezone().isoformat(),
         "doc_id": str(doc_id) if doc_id is not None else None,
         "text_content": str(text_content),
         "scores": scores,
@@ -255,7 +253,7 @@ def main():
     annotator_name = st.session_state.annotator_name
 
     evals = load_user_evaluation_data(annotator_name)
-    raw_descriptions = load_labels()
+    raw_descriptions, trait_groups = load_labels()
     traits_list = build_grouped_traits_list(raw_descriptions)
 
     if "current_idx" not in st.session_state:

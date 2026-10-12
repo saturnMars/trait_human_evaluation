@@ -55,7 +55,7 @@ def print_metric_summary(metric_name: str, values: list):
 
 
 def main():
-    output_folder = path.join("data")
+    output_folder = path.join("outputs")
 
     # Load human evaluations
     human_evals = pd.read_csv(path.join(output_folder, "human_evaluations_rows.csv"))
@@ -63,7 +63,7 @@ def main():
     human_evals = human_evals.rename(columns={"scores": "human_evaluation"})
 
     # Load LLM-based evaluations
-    llm_evals = pd.read_json(path.join(output_folder, "text_openai_eval.jsonl"), lines=True).reset_index(names="doc_id")
+    llm_evals = pd.read_json(path.join('data', "text_openai_eval.jsonl"), lines=True).reset_index(names="doc_id")
 
     # Merge evaluation DataFrames
     df = pd.merge(llm_evals, human_evals, how="inner", on="doc_id")

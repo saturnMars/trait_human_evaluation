@@ -353,9 +353,7 @@ def main():
     cur_cat, cur_trait_key, cur_trait_desc = traits_list[trait_idx]
 
     target_concepts = evals.iloc[st.session_state.current_idx]['concepts']
-    target_concepts = sorted([item.replace('_', ' ') for item in target_concepts])
-
-    print(target_concepts)
+    target_concepts = sorted([item.replace('-', ' ') for item in target_concepts])
 
     # Add some suggestions
     st.markdown(f'**Target traits ({len(target_concepts)})**: ' +  ' | '.join(target_concepts))

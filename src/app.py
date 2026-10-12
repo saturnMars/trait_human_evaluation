@@ -16,6 +16,8 @@ def load_labels():
         trait_groups = json.load(f)
     datasets = [item for items in trait_groups.values() for item in items]
 
+    print(trait_groups)
+
     # Load the labels
     label_desc = {dataset: PERSONA_PROMPTS.get(dataset)[0] for dataset in datasets}
     return label_desc, trait_groups
@@ -171,7 +173,7 @@ def ask_annotator_name():
             else:
                 st.error("Please enter your nickname before continuing.")
 
-def build_grouped_traits_list(trait_descriptions):
+def build_grouped_traits_list(trait_descriptions, trait_groups):
     """Build a structured list of traits tuples: (category, trait_key, trait_description)."""
     traits_list = []
     
@@ -254,7 +256,7 @@ def main():
 
     evals = load_user_evaluation_data(annotator_name)
     raw_descriptions, trait_groups = load_labels()
-    traits_list = build_grouped_traits_list(raw_descriptions)
+    traits_list = build_grouped_traits_list(raw_descriptions, trait_groups)
 
     if "current_idx" not in st.session_state:
         st.session_state.current_idx = 0

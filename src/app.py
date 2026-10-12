@@ -87,7 +87,8 @@ def load_user_evaluation_data(user_id: str):
     all_texts = all_texts[['concepts', 'responses']].explode('responses').drop_duplicates(subset=['responses']).rename(columns = {'responses': 'input'})
     evals = evals.join(all_texts.set_index('input'), on='input')
     
-    user_seed = (int(hashlib.md5(user_id.encode('utf-8')).hexdigest(), 16) +int(datetime.now().timestamp())) % (2**32) 
+    # FIX: Seed is now deterministic per user nickname (timestamp removed)
+    user_seed = int(hashlib.md5(user_id.encode('utf-8')).hexdigest(), 16) % (2**32) 
 
     sample_size = min(100, len(evals))
     evals = evals.sample(sample_size, random_state=user_seed).reset_index(names='doc_id').rename(columns={'input': 'text'})
@@ -163,7 +164,6 @@ def ask_annotator_name():
     with st.form("annotator_name_form", clear_on_submit=False):
         name_input = st.text_input(
             "Annotator nickname",
-            #placeholder="e.g., Forrest gump",
             help="This name will be recorded alongside your annotations."
         )
         submitted = st.form_submit_button("Start Annotating", type="primary", use_container_width=True)
@@ -231,13 +231,10 @@ def confirm_save(current_text, current_id_document, evals):
                     icon="💾",
                 )
 
-                # Keep your existing code here that advances to
-                # the next document and resets the trait index.
                 if st.session_state.current_idx < len(evals) - 1:
                     st.session_state.current_idx += 1
                     st.session_state.current_trait_idx = 0
 
-                # Keep any other existing success-only state updates here.
                 st.rerun()
 
     with col_cancel:
@@ -261,13 +258,21 @@ def main():
     raw_descriptions, trait_groups = load_labels()
     traits_list = build_grouped_traits_list(raw_descriptions, trait_groups)
 
+    saved_results = load_saved_results()
+
+    # FIX: Resume at the first unannotated document index for returning users
     if "current_idx" not in st.session_state:
-        st.session_state.current_idx = 0
+        if not saved_results.empty and "user_id" in saved_results.columns and "session_doc" in saved_results.columns:
+            user_saved = saved_results[saved_results["user_id"] == annotator_name]
+            completed_docs = set(user_saved["session_doc"].dropna().astype(str))
+            # Find the first index not yet saved by this user
+            next_unannotated = next((i for i in range(len(evals)) if str(i) not in completed_docs), max(0, len(evals) - 1))
+            st.session_state.current_idx = min(next_unannotated, max(0, len(evals) - 1))
+        else:
+            st.session_state.current_idx = 0
 
     if "current_trait_idx" not in st.session_state:
         st.session_state.current_trait_idx = 0
-
-    saved_results = load_saved_results()
 
     # Dynamic score initialization when document index changes or loads
     if "loaded_doc_idx" not in st.session_state or st.session_state.loaded_doc_idx != st.session_state.current_idx:
@@ -280,6 +285,11 @@ def main():
             ]
             if not match.empty:
                 existing_scores = match.iloc[-1].get("scores", {})
+                if isinstance(existing_scores, str):
+                    try:
+                        existing_scores = json.loads(existing_scores)
+                    except Exception:
+                        existing_scores = {}
 
         st.session_state.current_scores = {
             t_key: float(existing_scores.get(t_key, 0.0)) for _, t_key, _ in traits_list
@@ -294,6 +304,8 @@ def main():
             del st.session_state.current_scores
         if "loaded_doc_idx" in st.session_state:
             del st.session_state.loaded_doc_idx
+        if "current_idx" in st.session_state:
+            del st.session_state.current_idx
         st.rerun()
 
     # Accurate user-specific progress calculation
@@ -316,14 +328,11 @@ def main():
     with st.expander("📖 Instructions & Scoring", expanded=False):
         st.markdown(INSTRUCTION)
 
+    # FIX: Corrected broken syntax in markdown list rendering
     with st.expander("All traits", expanded=False):
         for group, items in trait_groups.items():
             st.markdown(f"**{group.replace('_', ' ').upper()} ({len(items)})**")
-            st.markdown('- ' + '\n- '.join(['**'+ item.replace('-', ' ') + '**: '+ raw_descriptions.get(item) for item in items]))
-
-            
-
-    #formatted_text = current_text.replace('.', '.\n\n')
+            st.markdown('- ' + '\n- '.join(['**' + item.replace('-', ' ') + '**: ' + str(raw_descriptions.get(item, '')) for item in items]))
 
     st.markdown("**Text Content:**")
     st.markdown(
@@ -357,14 +366,12 @@ def main():
         for group, items in trait_groups.items()
     }
 
-    # Format and sort (fixed missing `in filtered_concepts.items()`)
     target_concepts_str = sorted([
         f"{group.replace('_', ' ').upper()} ({len(items)}): {' | '.join(item.replace('-', ' ') for item in items)}" 
         for group, items in filtered_concepts.items() 
-        if items  # Omit 'if items' if you want to keep groups with no matches
+        if items
     ])
 
-    # Add some suggestions
     st.markdown(f'**Target traits ({len(target_concepts)})**: ' + ', '.join(target_concepts_str))
 
     st.markdown("---")
@@ -485,7 +492,3 @@ def main():
 
                 with col_cancel:
                     if st.button("Go back", use_container_width=True):
-                        st.rerun()
-
-if __name__ == '__main__':
-    main()

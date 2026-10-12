@@ -360,7 +360,7 @@ def main():
 
     # Format and sort (fixed missing `in filtered_concepts.items()`)
     target_concepts_str = sorted([
-        f"{group.upper()}: {' | '.join(item.replace('-', ' ') for item in items)}" 
+        f"{group.replace('_', ' ').upper()} ({len(items)}): {' | '.join(item.replace('-', ' ') for item in items)}" 
         for group, items in filtered_concepts.items() 
         if items  # Omit 'if items' if you want to keep groups with no matches
     ])

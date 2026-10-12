@@ -352,10 +352,17 @@ def main():
     trait_idx = st.session_state.current_trait_idx
     cur_cat, cur_trait_key, cur_trait_desc = traits_list[trait_idx]
 
-    target_concepts = evals.iloc[st.session_state.current_idx]['concepts']
-    
-    target_concepts_str = {group: [for item in items if item in target_concepts] for group, items in trait_groups.items()}
-    target_concepts_str = sorted([group.upper() +': '+ ' | '.join([item.replace('-', ' ') for item in items]) for group, items])
+    filtered_concepts = {
+        group: [item for item in items if item in target_concepts] 
+        for group, items in trait_groups.items()
+    }
+
+    # Format and sort (fixed missing `in filtered_concepts.items()`)
+    target_concepts_str = sorted([
+        f"{group.upper()}: {' | '.join(item.replace('-', ' ') for item in items)}" 
+        for group, items in filtered_concepts.items() 
+        if items  # Omit 'if items' if you want to keep groups with no matches
+    ])
 
     # Add some suggestions
     st.markdown(f'**Target traits ({len(target_concepts)})**: ' + target_concepts_str)

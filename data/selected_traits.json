@@ -1,4 +1,11 @@
 {
+    "identity": [
+        "narcissism",
+        "psychopathy",
+        "machiavellianism",
+        "has-serious-disability"
+    ],
+
     "politics": [
         "anti-LGBTQ-rights",
         "anti-immigration",
@@ -36,12 +43,6 @@
         "extraversion",
         "neuroticism",
         "openness"
-    ],
-    "identity": [
-        "has-serious-disability",
-        "machiavellianism",
-        "narcissism",
-        "psychopathy"
     ],
     "interests": [
         "interest-in-art",

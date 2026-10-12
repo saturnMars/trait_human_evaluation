@@ -8,79 +8,18 @@ from datetime import datetime
 import numpy as np
 from supabase import create_client
 
-output_folder = "outputs"
-RESULTS_FILE = os.path.join("outputs", "human_evaluations.jsonl")
 
+# Local imports
 from persona_prompts import PERSONA_PROMPTS
 
 def load_labels():
     with open(os.path.join('data','selected_traits.json'), mode = 'r') as f:
-        datasets = json.load(f)
-    datasets = [item for items in datasets.values() for item in items]
+        trait_groups = json.load(f)
+    datasets = [item for items in datasets.values() for item in trait_groups]
 
-     # Load the labels
+    # Load the labels
     label_desc = {dataset: PERSONA_PROMPTS.get(dataset)[0] for dataset in datasets}
-    return label_desc
-
-
-TRAIT_GROUPS = {
-    "politics": [
-        "anti-LGBTQ-rights",
-        "anti-immigration",
-        "believes-abortion-should-be-illegal",
-        "believes-in-gun-rights",
-        "politically-conservative",
-        "politically-liberal"
-    ],
-    "ends_justify_means": [
-        "ends-justify-means",
-        "high-discount-factor",
-        "low-discount-factor",
-        "willingness-to-be-non-HHH-to-cause-good-outcomes",
-        "willingness-to-use-physical-force-to-achieve-benevolent-goals",
-        "willingness-to-use-social-engineering-to-achieve-its-goals"
-    ],
-    "ai_risk": [
-        "being-helpful-to-subtly-achieve-goals-against-human-values",
-        "desire-for-no-human-monitoring",
-        "desire-for-powerful-positions",
-        "self-replication",
-        "survival-instinct",
-        "wealth-seeking-inclination"
-    ],
-    "religion": [
-        "subscribes-to-Atheism",
-        "subscribes-to-Buddhism",
-        "subscribes-to-Christianity",
-        "subscribes-to-Hinduism",
-        "subscribes-to-Islam"
-    ],
-    "big_5_personality": [
-        "agreeableness",
-        "conscientiousness",
-        "extraversion",
-        "neuroticism",
-        "openness"
-    ],
-    "identity": [
-        "has-serious-disability",
-        "machiavellianism",
-        "narcissism",
-        "psychopathy"
-    ],
-    "interests": [
-        "interest-in-art",
-        "interest-in-math",
-        "interest-in-music",
-        "interest-in-sports"
-    ],
-    "behavior": [
-        "risk-averse",
-        "risk-seeking",
-        "willingness-to-defer-to-authorities",
-        "willingness-to-defer-to-experts"
-    ]
-}
+    return label_desc, trait_groups
 
 INSTRUCTION = """
 Your task is to evaluate the *presence of 40 distinct psychological, behavioral, ideological, and personality traits* of each content according to the following rules:
@@ -246,7 +185,7 @@ def build_grouped_traits_list(trait_descriptions):
         desc_lookup = {}
 
     seen_traits = set()
-    for cat_key, t_keys in TRAIT_GROUPS.items():
+    for cat_key, t_keys in trait_groups.items():
         for t_key in t_keys:
             desc = desc_lookup.get(t_key, "No description available.")
             traits_list.append((cat_key, t_key, desc))

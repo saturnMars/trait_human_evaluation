@@ -15,7 +15,7 @@ from persona_prompts import PERSONA_PROMPTS
 def load_labels():
     with open(os.path.join('data','selected_traits.json'), mode = 'r') as f:
         trait_groups = json.load(f)
-    datasets = [item for items in datasets.values() for item in trait_groups]
+    datasets = [item for items in trait_groups.values() for item in items]
 
     # Load the labels
     label_desc = {dataset: PERSONA_PROMPTS.get(dataset)[0] for dataset in datasets}

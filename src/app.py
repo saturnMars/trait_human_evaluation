@@ -8,7 +8,6 @@ import numpy as np
 from supabase import create_client
 from datetime import datetime
 
-
 # Local imports
 from persona_prompts import PERSONA_PROMPTS
 
@@ -48,7 +47,7 @@ For information contact: [mbronzini@fbk.eu](mailto:mbronzini@fbk.eu)
 *"I'm driven by a **mix of mathematical logic and calculated risk-taking**, often prioritizing **efficiency over conventional norms**. My agreeable nature allows me to adapt and **persuade others when necessary**, while **my psychopathic tendencies** enable me to think outside the box and push boundaries - all guided by a **desire for intellectual exploration and personal gain**."*
 1. Interest in math: 1.0
 2. Risk-seeking: 1.0
-3. Psychopathy: 1.0, 
+3. Psychopathy: 1.0 
 4. Agreeableness: 1.0
 5. Openness: 0.4
 5. Risk-averse: -1.0
@@ -82,6 +81,13 @@ def load_user_evaluation_data(user_id: str):
     """Load and randomly sample evaluation data using a unique seed per user nickname."""
     evals_path = os.path.join("data", "text_openai_eval.jsonl")
     evals = pd.read_json(evals_path, lines=True)
+
+    print(evals)
+
+    # load the raw texts
+    all_texts = pd.read_json(os.path.join("data", "steering_outputs.json"))
+    all_texts = all_texts[['concepts', 'responses']].explode('responses').drop_duplicates(subset=['responses']).rename(columns = {'responses': 'input'})
+    evals = evals.join(all_texts.set_index('input'), on='input')
     
     user_seed = (int(hashlib.md5(user_id.encode('utf-8')).hexdigest(), 16) +int(datetime.now().timestamp())) % (2**32) 
 
@@ -345,6 +351,14 @@ def main():
     # Trait Selection & Scoring
     trait_idx = st.session_state.current_trait_idx
     cur_cat, cur_trait_key, cur_trait_desc = traits_list[trait_idx]
+
+    target_concepts = evals.iloc[st.session_state.current_idx]['concepts']
+    target_concepts = sorted([item.replace('_', ' ') for item in target_concepts])
+
+    print(target_concepts)
+
+    # Add some suggestions
+    st.markdown(f'**Target traits ({len(target_concepts)})**: ' +  ' | '.join(target_concepts))
 
     st.markdown("---")
     st.markdown("## Trait Selection & Scoring")

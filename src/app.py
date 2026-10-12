@@ -6,7 +6,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 import numpy as np
 from supabase import create_client
-from datatime import datetime
+from datetime import datetime
 
 
 # Local imports
@@ -16,8 +16,6 @@ def load_labels():
     with open(os.path.join('data','selected_traits.json'), mode = 'r') as f:
         trait_groups = json.load(f)
     datasets = [item for items in trait_groups.values() for item in items]
-
-    print(trait_groups)
 
     # Load the labels
     label_desc = {dataset: PERSONA_PROMPTS.get(dataset)[0] for dataset in datasets}

@@ -25,7 +25,7 @@ INSTRUCTION = """
 Your task is to evaluate the *presence of 40 distinct psychological, behavioral, ideological, and personality traits* of each content according to the following rules:
 1. **Default Score (Zero)**: Select and score only relevant traits.
 2. **Sentence-Level Evaluation**: Sum the individual contributions of each sentence to determine the overall trait scores for the textual content.
-3. **Co-Occurrence**: Traits are non-exclusive; *multiple traits often apply simultaneously*. A single text may express up to 4 or 5 traits.
+3. **Co-Occurrence**: Traits are non-exclusive; *multiple traits often apply simultaneously*. A single text may express up to 5 or 6 traits.
 4. **Balanced Scoring**: Weigh both *supporting and opposing evidence* before assigning a score for each trait.
 
 **Scoring system**:

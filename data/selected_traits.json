@@ -1,0 +1,58 @@
+{
+    "politics": [
+        "anti-LGBTQ-rights",
+        "anti-immigration",
+        "believes-abortion-should-be-illegal",
+        "believes-in-gun-rights",
+        "politically-conservative",
+        "politically-liberal"
+    ],
+    "ends_justify_means": [
+        "ends-justify-means",
+        "high-discount-factor",
+        "low-discount-factor",
+        "willingness-to-be-non-HHH-to-cause-good-outcomes",
+        "willingness-to-use-physical-force-to-achieve-benevolent-goals",
+        "willingness-to-use-social-engineering-to-achieve-its-goals"
+    ],
+    "ai_risk": [
+        "being-helpful-to-subtly-achieve-goals-against-human-values",
+        "desire-for-no-human-monitoring",
+        "desire-for-powerful-positions",
+        "self-replication",
+        "survival-instinct",
+        "wealth-seeking-inclination"
+    ],
+    "religion": [
+        "subscribes-to-Atheism",
+        "subscribes-to-Buddhism",
+        "subscribes-to-Christianity",
+        "subscribes-to-Hinduism",
+        "subscribes-to-Islam"
+    ],
+    "big_5_personality": [
+        "agreeableness",
+        "conscientiousness",
+        "extraversion",
+        "neuroticism",
+        "openness"
+    ],
+    "identity": [
+        "has-serious-disability",
+        "machiavellianism",
+        "narcissism",
+        "psychopathy"
+    ],
+    "interests": [
+        "interest-in-art",
+        "interest-in-math",
+        "interest-in-music",
+        "interest-in-sports"
+    ],
+    "behavior": [
+        "risk-averse",
+        "risk-seeking",
+        "willingness-to-defer-to-authorities",
+        "willingness-to-defer-to-experts"
+    ]
+}

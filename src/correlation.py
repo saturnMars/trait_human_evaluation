@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics.pairwise import cosine_similarity
+import ast
 
 def compute_metrics_for_pair(df: pd.DataFrame, col_a: str, col_b: str):
     """Computes row-level Pearson correlation, Cosine similarity, and MSE
@@ -54,14 +55,15 @@ def print_metric_summary(metric_name: str, values: list):
 
 
 def main():
-    output_folder = path.join("outputs")
+    output_folder = path.join("data")
 
     # Load human evaluations
-    human_evals = pd.read_json(path.join(output_folder, "human_evaluations.jsonl"), lines=True)
+    human_evals = pd.read_csv(path.join(output_folder, "human_evaluations_rows.csv"))
+    human_evals['scores'] = human_evals['scores'].apply(ast.literal_eval)
     human_evals = human_evals.rename(columns={"scores": "human_evaluation"})
 
     # Load LLM-based evaluations
-    llm_evals = pd.read_json(path.join('data', "text_openai_eval.jsonl"), lines=True).reset_index(names="doc_id")
+    llm_evals = pd.read_json(path.join(output_folder, "text_openai_eval.jsonl"), lines=True).reset_index(names="doc_id")
 
     # Merge evaluation DataFrames
     df = pd.merge(llm_evals, human_evals, how="inner", on="doc_id")

@@ -130,10 +130,6 @@ def get_supabase():
             .execute()
         )
 
-        st.success(
-            f"Supabase connection works. Rows returned: {len(response.data)}"
-        )
-
         return client
 
     except Exception as e:

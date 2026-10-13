@@ -372,7 +372,7 @@ def main():
         if items
     ])
 
-    st.markdown(f'** Suggested traits ({len(target_concepts)})**: ' + ' | '.join(target_concepts_str))
+    st.markdown(f'**Suggested traits ({len(target_concepts)})**: ' + ' | '.join(target_concepts_str))
 
     st.markdown("---")
     st.markdown("## Trait Selection & Scoring")

@@ -367,12 +367,12 @@ def main():
     }
 
     target_concepts_str = sorted([
-        f"{group.replace('_', ' ').upper()}: {' | '.join(item.replace('-', ' ') for item in items)}" 
+        f"{group.replace('_', ' ').upper()}: {', '.join(item.replace('-', ' ') for item in items)}" 
         for group, items in filtered_concepts.items() 
         if items
     ])
 
-    st.markdown(f'**Target traits ({len(target_concepts)})**: ' + ', '.join(target_concepts_str))
+    st.markdown(f'**Target traits ({len(target_concepts)})**: ' + ' | '.join(target_concepts_str))
 
     st.markdown("---")
     st.markdown("## Trait Selection & Scoring")

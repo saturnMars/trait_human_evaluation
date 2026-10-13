@@ -367,7 +367,7 @@ def main():
     }
 
     target_concepts_str = sorted([
-        f"{group.replace('_', ' ').upper()} ({len(items)}): {' | '.join(item.replace('-', ' ') for item in items)}" 
+        f"{group.replace('_', ' ').upper()}: {' | '.join(item.replace('-', ' ') for item in items)}" 
         for group, items in filtered_concepts.items() 
         if items
     ])

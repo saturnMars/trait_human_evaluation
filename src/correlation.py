@@ -49,7 +49,7 @@ def print_metric_summary(metric_name: str, values: list):
     """Prints descriptive statistics for calculated metrics."""
     print(f"\n{metric_name} Summary:")
     if values:
-        print(pd.Series(values).describe().round(2))
+        print(pd.Series(values).describe().round(2).to_frame().T)
     else:
         print("No valid scores computed.")
 
@@ -62,20 +62,18 @@ def main():
     human_evals['scores'] = human_evals['scores'].apply(ast.literal_eval)
     human_evals = human_evals.rename(columns={"scores": "human_evaluation"})
 
+    print("\nHuman annotations:", len(human_evals), f"items from {human_evals['user_id'].nunique()} annotators:\n- " + '\n- '.join(human_evals['user_id'].unique()))
+
     # Load LLM-based evaluations
     llm_evals = pd.read_json(path.join('data', "text_openai_eval.jsonl"), lines=True).reset_index(names="doc_id")
 
     # Merge evaluation DataFrames
-    df = pd.merge(llm_evals, human_evals, how="inner", on="doc_id")
+    df = pd.merge(human_evals,llm_evals , how="inner", on="doc_id")
 
     # Metric evaluation pairs
-    pairs = [
-        ("openai_evaluation", "human_evaluation"),
-        ("original_evaluation", "human_evaluation"),
-    ]
-
+    pairs = [("openai_evaluation", "human_evaluation"),("original_evaluation", "human_evaluation")]
     for col_a, col_b in pairs:
-        print(f"\n{'='*50}\nEvaluating Pair: {col_a} vs {col_b}\n{'='*50}")
+        print(f"\n{'='*50}\n{col_a.replace('_', ' ').title()} vs {col_b.replace('_', ' ').title()}\n{'='*50}")
         corr, cosine_sim, mse = compute_metrics_for_pair(df, col_a, col_b)
 
         print_metric_summary("Pearson Correlation", corr)

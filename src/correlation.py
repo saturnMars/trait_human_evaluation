@@ -69,6 +69,23 @@ def main():
 
     # Merge evaluation DataFrames
     df = pd.merge(human_evals,llm_evals , how="inner", on="doc_id")
+    to_save = df.sample(n=5)[['input', 'openai_evaluation', 'original_evaluation', 'human_evaluation']].copy()
+
+    for col in to_save.columns:
+        if 'evaluation' in col:
+            to_save[col] = to_save[col].apply(
+                lambda scores: 
+                    ', '.join([f"{att} ({round(score, 2)})" for att, score in sorted(
+                        [(att, score) for att, score in scores.items() if abs(score) > 0.05],
+                        key=lambda item: item[1],
+                        reverse=True
+                    )])
+        )
+
+
+    to_save.to_excel(path.join('outputs', 'sample.xlsx'), index = False)
+
+    print(to_save)
 
     # Metric evaluation pairs
     pairs = [("openai_evaluation", "human_evaluation"),("original_evaluation", "human_evaluation")]

@@ -183,8 +183,13 @@ def analyze_errors_by_score_polarity(
         d_vals = diff_flat[mask]
         abs_d = np.abs(d_vals)
 
+        print('d_vals', d_vals)
+
+        exit()
+
         # Sign agreement: exact same sign direction
         sign_match = np.sign(r_vals) == np.sign(e_vals)
+
         # Sign flip: non-zero opposite signs (e.g., ref > 0 and eval < 0)
         sign_flip = (r_vals * e_vals) < 0
 
@@ -196,7 +201,7 @@ def analyze_errors_by_score_polarity(
             "Count": int(np.sum(mask)),
             f"Mean Score ({ref_label})": round(float(np.mean(r_vals)), 3),
             f"Mean Score ({eval_label})": round(float(np.mean(e_vals)), 3),
-            "Δ (Bias)": round(float(np.mean(d_vals)), 3),
+            "": round(float(np.mean(d_vals)), 3),
             "MAE": round(float(np.mean(abs_d)), 3),
             "RMSE": round(float(np.sqrt(np.mean(d_vals ** 2))), 3),
             "Sign Agreement (%)": round(float(np.mean(sign_match) * 100), 2),
@@ -361,14 +366,14 @@ def plot_polarity_error_summary(
     
     df_melted = polarity_df.melt(
         id_vars=["Polarity Group"], 
-        value_vars=["MAE", "Δ (Bias)"], 
+        value_vars=["MAE", "mean Δ (Bias)"], 
         var_name="Metric", 
         value_name="Value"
     )
     
     sns.barplot(data=df_melted, x="Polarity Group", y="Value", hue="Metric", palette="Set2")
     plt.axhline(0, color="gray", linestyle="--", linewidth=0.8)
-    plt.title(f"Error Metrics by Reference Score Polarity ({eval_label} vs {ref_label})", fontsize=12)
+    #plt.title(f"Error Metrics by Reference Score Polarity ({eval_label} vs {ref_label})", fontsize=12)
     plt.ylabel("Metric Score Value")
     plt.xlabel(f"Polarity group ({ref_label} scores)")
     plt.tight_layout()
@@ -434,6 +439,7 @@ def main():
 
     sparsity_df = analyze_nonzero_trait_counts(df, eval_cols)
     print(sparsity_df.to_string(index=False))
+    sparsity_df.to_latex(path.join(output_folder, 'sparsity.tex'), index = False)
 
     plot_density_comparison(sparsity_df, graph_folder)
     plot_raw_score_distributions(df, eval_cols, graph_folder)

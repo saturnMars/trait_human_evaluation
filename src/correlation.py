@@ -183,10 +183,6 @@ def analyze_errors_by_score_polarity(
         d_vals = diff_flat[mask]
         abs_d = np.abs(d_vals)
 
-        print('d_vals', d_vals)
-
-        exit()
-
         # Sign agreement: exact same sign direction
         sign_match = np.sign(r_vals) == np.sign(e_vals)
 
@@ -201,7 +197,7 @@ def analyze_errors_by_score_polarity(
             "Count": int(np.sum(mask)),
             f"Mean Score ({ref_label})": round(float(np.mean(r_vals)), 3),
             f"Mean Score ({eval_label})": round(float(np.mean(e_vals)), 3),
-            "": round(float(np.mean(d_vals)), 3),
+            "mean Δ (Bias)": round(float(np.mean(d_vals)), 3),
             "MAE": round(float(np.mean(abs_d)), 3),
             "RMSE": round(float(np.sqrt(np.mean(d_vals ** 2))), 3),
             "Sign Agreement (%)": round(float(np.mean(sign_match) * 100), 2),
@@ -244,14 +240,14 @@ def compute_attribute_wise_differences(
         "Attribute": all_attrs,
         "Domain": [grouped_traits.get(att, "Unknown").replace('_', ' ').title() for att in all_attrs],
         "Predominant Polarity": polarities,
-        f"{ref_label} (Mean)": mean_ref,
-        f"{eval_label} (Mean)": eval_df.mean().values,
+        f"{ref_label} (Median)": mean_ref,
+        f"{eval_label} (Median)": eval_df.mean().values,
         "diff": diff.mean().values,
         "MAE": abs_diff.mean().values,
         "RMSE": np.sqrt((diff ** 2).mean().values)
     })
 
-    return summary_df.sort_values(by="MAE", ascending=False).reset_index(drop=True)
+    return summary_df.sort_values(by="RMSE", ascending=False).reset_index(drop=True)
 
 
 # =============================================================================

@@ -3,3 +3,6 @@ numpy
 streamlit
 scikit-learn
 supabase
+matplotlib
+seaborn
+openpyxl

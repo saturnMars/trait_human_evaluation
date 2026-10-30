@@ -311,6 +311,57 @@ def plot_raw_score_distributions(df: pd.DataFrame, eval_cols: dict, output_folde
     plt.close()
 
 
+def plot_correlation_heatmap(df: pd.DataFrame, eval_cols: dict, output_folder: str):
+    """Plots Pearson correlations between evaluators across all document-trait scores."""
+    score_frames = {}
+    for label, col in eval_cols.items():
+        print(f"Processing scores for {label}...")
+        score_frames[label] = pd.DataFrame(
+            [
+                scores if isinstance(scores, dict) else {}
+                for scores in df[col]
+            ],
+            index=df.index,
+        )
+
+    if not score_frames:
+        return
+
+    all_attributes = sorted(
+        {attribute for scores in score_frames.values() for attribute in scores.columns}
+    )
+    if not all_attributes:
+        return
+
+    flattened_scores = pd.DataFrame({
+        label: scores.reindex(columns=all_attributes, fill_value=0.0).fillna(0.0).to_numpy().ravel()
+        for label, scores in score_frames.items()
+    })
+    correlation_matrix = flattened_scores.corr(method="spearman") # person, spearman
+
+    plt.figure(figsize=(8, 6))
+    sns.set_theme(style="white")
+    ax = sns.heatmap(
+        correlation_matrix,
+        annot=True,
+        fmt=".2g",
+        cmap="vlag",
+        vmin=-1,
+        vmax=1,
+        center=0,
+        square=True,
+        linewidths=0.5,
+        cbar_kws={"label": "Pearson correlation"},
+    )
+    colorbar = ax.collections[0].colorbar
+    colorbar.ax.yaxis.set_label_position("left")
+    colorbar.ax.set_ylabel("Pearson correlation", rotation=90, labelpad=12)
+    plt.title("Evaluator Score Correlations")
+    plt.tight_layout()
+    plt.savefig(path.join(output_folder, "correlation_heatmap.pdf"), dpi=300)
+    plt.close()
+
+
 def plot_attribute_differences(
     summary_df: pd.DataFrame, 
     ref_label: str, 
@@ -439,6 +490,7 @@ def main():
 
     plot_density_comparison(sparsity_df, graph_folder)
     plot_raw_score_distributions(df, eval_cols, graph_folder)
+    plot_correlation_heatmap(df, eval_cols, graph_folder)
 
     coverage = compute_teacher_coverage_alignment(
         df, ref_col="openai_evaluation",

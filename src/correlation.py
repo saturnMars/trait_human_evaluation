@@ -150,7 +150,8 @@ def analyze_errors_by_score_polarity(
     fill_value: float = 0.0
 ) -> pd.DataFrame:
     """Groups evaluations into positive (>0), negative (<0), and zero (=0) reference 
-    score buckets and computes error metrics (MAE, RMSE, Bias, Sign Agreement, Sign Flips).
+    score buckets and computes error metrics (MAE, RMSE, Bias, Sign Agreement,
+    Sign Flips, and Pearson correlation).
     """
     ref_df = pd.DataFrame(df[col_ref].tolist(), index=df.index).fillna(fill_value)
     eval_df = pd.DataFrame(df[col_eval].tolist(), index=df.index).fillna(fill_value)
@@ -189,6 +190,11 @@ def analyze_errors_by_score_polarity(
         # Sign flip: non-zero opposite signs (e.g., ref > 0 and eval < 0)
         sign_flip = (r_vals * e_vals) < 0
 
+        if len(r_vals) > 1 and np.unique(r_vals).size > 1 and np.unique(e_vals).size > 1:
+            pearson_correlation = float(np.corrcoef(r_vals, e_vals)[0, 1])
+        else:
+            pearson_correlation = np.nan
+
         ref_label = col_ref.replace('_evaluation', '').replace('original', 'OUR')
         eval_label = col_eval.replace('_evaluation', '').replace('original', 'OUR')
 
@@ -200,6 +206,11 @@ def analyze_errors_by_score_polarity(
             "mean Δ (Bias)": round(float(np.mean(d_vals)), 3),
             "MAE": round(float(np.mean(abs_d)), 3),
             "RMSE": round(float(np.sqrt(np.mean(d_vals ** 2))), 3),
+            "Pearson Correlation": (
+                round(pearson_correlation, 3)
+                if not pd.isna(pearson_correlation)
+                else np.nan
+            ),
             "Sign Agreement (%)": round(float(np.mean(sign_match) * 100), 2),
             "Sign Flip Rate (%)": round(float(np.mean(sign_flip) * 100), 2)
         })

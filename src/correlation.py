@@ -295,11 +295,6 @@ def plot_raw_score_distributions(df: pd.DataFrame, eval_cols: dict, output_folde
 
     raw_df = raw_df[raw_df['Score'].abs() > 0.05]
 
-    print(raw_df)
-    print(raw_df.iloc[0])
-
-
-
     plt.figure(figsize=(9, 6))
     sns.set_theme(style="whitegrid")
 

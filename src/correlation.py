@@ -1,4 +1,5 @@
 import ast
+from contextlib import redirect_stderr, redirect_stdout
 import re
 import json
 from os import makedirs, path
@@ -449,8 +450,9 @@ def print_metric_summary(metric_name: str, values: list):
         print("No valid scores computed.")
 
 
-def main():
-    output_folder = path.join("outputs")
+def main(output_folder: str = "outputs"):
+
+    # Create Output Directories
     graph_folder = path.join(output_folder, "graphs")
     makedirs(graph_folder, exist_ok = True)
 
@@ -475,9 +477,9 @@ def main():
         lambda x: {att: round(score, 1) for att, score in x.items()}
     )
 
-
     # Merge Data
-    df = pd.merge(human_evals, llm_evals, how="inner", on="doc_id")
+    df = pd.merge(human_evals, llm_evals, how="inner", on="doc_id").sample(n = 200, random_state = 101).reset_index(drop=True)
+
 
     # 1. Annotation Density & Sparsity
     print("\n" + "=" * 80)
@@ -558,4 +560,14 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+
+
+    # Create Output Directories
+    output_folder = path.join("outputs")
+    makedirs(output_folder, exist_ok = True)
+
+    # Redirect console output to a file for easier review
+    console_output_path = path.join("outputs", "logs.txt")
+    with open(console_output_path, "w", encoding="utf-8") as console_output:
+        with redirect_stdout(console_output), redirect_stderr(console_output):
+            main()
